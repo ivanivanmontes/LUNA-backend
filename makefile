@@ -1,5 +1,9 @@
 # Makefile
 
+
+# Target to open the IDE + activate virtual environment
+open:
+	./open_project.sh
 # Default target to run the FastAPI app
 run:
 	uvicorn main:app --reload
