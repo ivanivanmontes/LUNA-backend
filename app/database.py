@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 import os
 
@@ -13,11 +14,10 @@ db_password = os.getenv("DB_PASSWORD")
 db_name = os.getenv("DB_NAME")
 db_host = os.getenv("DB_HOST")
 
-app = FastAPI()
-
 # Database connection string
 #TODO: for some reason the root user doesn't have a password???
 DATABASE_URL = f"mysql+pymysql://{db_username}:{db_password}@{db_host}/{db_name}"
+Base = declarative_base()
 
 # Create a SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
@@ -25,12 +25,18 @@ engine = create_engine(DATABASE_URL)
 # Create a configured "Session" class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World!"}
 
-@app.get("/check-db")
+router = APIRouter()
+
+
+@router.get("/check-db")
 async def check_db_connection():
+    """
+    Try to connect to the database 
+
+    Return:
+        JSON Object: Connection Status
+    """
     try:
         with engine.connect() as connection:
             # Execute the query using text() to construct the SQL statement
