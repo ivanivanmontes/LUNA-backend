@@ -6,7 +6,7 @@ open:
 	./open_project.sh
 # Default target to run the FastAPI app
 run:
-	uvicorn main:app --reload
+	uvicorn app.main:app --reload
 
 # Target to install dependencies
 install:
