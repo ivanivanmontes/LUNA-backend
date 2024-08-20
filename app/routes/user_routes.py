@@ -18,8 +18,9 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/get_users")
-async def get_users(db: Session = Depends(get_db)):
+
+@router.get("/get_all_users")
+async def get_all_users(db: Session = Depends(get_db)):
     """
     Retrieve all users in the database
 
@@ -31,6 +32,30 @@ async def get_users(db: Session = Depends(get_db)):
     """
     users = db.query(UserModel).all()
     return users
+
+@router.get("/get_user/{user_id}")
+async def get_user(user_id : int, db: Session = Depends(get_db)):
+    """
+    Return a user model given their user_id
+
+    Args:
+        user_id: unique integer representing a user
+        db: database session
+    
+    Returns:
+        UserModel: user data 
+    
+    Raises:
+        HTTPException: if user_id does not exist
+    """
+    user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail=f"user not found for user_id: {user_id}")
+
+    return user
+
+#TODO: can we think of other read routes for the user?
 
 @router.post("/create_user", response_model=UserSchema)
 async def create_user(user: UserSchema, db: Session = Depends(get_db)) -> UserSchema:
@@ -76,3 +101,4 @@ async def create_user(user: UserSchema, db: Session = Depends(get_db)) -> UserSc
         db.rollback()
         logging.error(f"Error creating user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
