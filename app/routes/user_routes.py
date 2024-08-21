@@ -1,14 +1,13 @@
 import logging
 
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pymysql import IntegrityError
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import UserModel
-from app.schemas.user_schema import UserSchema
+from app.schemas.user_schema import UserSchema, UserUpdateSchema
 
 router = APIRouter()
 
@@ -131,3 +130,31 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)) -> JSONRespon
         logging.error(f"Error deleting user: {user_id}")
         raise HTTPException(status_code=400, detail=f"Error deleting user: {user_id}")
 
+@router.put("/update_user/{user_id}", response_model=UserUpdateSchema)
+async def update_user_basic(user_id: int, user_update: UserUpdateSchema, db: Session = Depends(get_db)) -> UserUpdateSchema:
+    #TODO: update this route to return past info and new info. Will need to change the return type
+    """
+    update a user's basic credentials (last/first/user name)
+
+    Args:
+        user_id: user's id 
+        user_update: schema that houses the info that could be updated
+        db: database session
+    
+    Return:
+        UserUpdateSchema: if update was successful and shows new user information
+    """
+    user = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+    
+
+    update_data = user_update.model_dump(exclude_unset=True)
+    for attribute, new_value in update_data.items():
+        # useful function, can be read as:
+        # user.attribute = new_value
+        setattr(user, attribute, new_value)
+
+    db.commit()
+    db.refresh(user)
+    return user
