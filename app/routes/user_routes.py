@@ -2,6 +2,7 @@ import logging
 
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import JSONResponse
 from pymysql import IntegrityError
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -18,6 +19,7 @@ def get_db():
     finally:
         db.close()
 
+#TODO: can we write the return types for clarity?
 
 @router.get("/get_all_users")
 async def get_all_users(db: Session = Depends(get_db)):
@@ -34,7 +36,7 @@ async def get_all_users(db: Session = Depends(get_db)):
     return users
 
 @router.get("/get_user/{user_id}")
-async def get_user(user_id : int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: Session = Depends(get_db)):
     """
     Return a user model given their user_id
 
@@ -100,5 +102,32 @@ async def create_user(user: UserSchema, db: Session = Depends(get_db)) -> UserSc
         # make sure to return the response given from the frontend!
         db.rollback()
         logging.error(f"Error creating user: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=400, detail=f"Error creating user: {e}")
     
+@router.delete("/delete_user/{user_id}")
+async def delete_user(user_id: int, db: Session = Depends(get_db)) -> JSONResponse:
+    """
+    deletes a user off of the database. 
+    no need to delete from user_pins or user_partnerships
+
+    Args:
+        user_id: the user id to delete 
+        db: Database session
+    
+    Returns:
+        Response: Letting us know if a user was successfully created
+    
+    Raises:
+        HTTPException: if user id cannot be deleted 
+    """
+
+    did_delete = db.query(UserModel).filter(UserModel.user_id == user_id).delete()
+    if did_delete:
+        db.commit()
+        logging.info(f"deleted user {user_id}")
+        return JSONResponse(status_code=200, content={"success": f"deleted user: {user_id}"})
+    else:
+        db.rollback()
+        logging.error(f"Error deleting user: {user_id}")
+        raise HTTPException(status_code=400, detail=f"Error deleting user: {user_id}")
+
