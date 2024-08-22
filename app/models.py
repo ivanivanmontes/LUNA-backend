@@ -1,8 +1,8 @@
 import bcrypt
 
 from random import randint
-from sqlalchemy import TIMESTAMP, Column, Integer, String, func
-from .database import engine, Base
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, func
+from .database import Base
 from .schemas.user_schema import UserSchema
 # sqlalchemy models
 class UserModel(Base):
@@ -25,7 +25,6 @@ class UserModel(Base):
         return randint(1,100000)
 
     __tablename__ = "users"
-    # __table__ = Table(__tablename__, Base.metadata, autoload_with=engine)
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
     first_name = Column(String, nullable=False, index=True)
     last_name = Column(String, nullable=False, index=True)
@@ -33,6 +32,7 @@ class UserModel(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
     creation_date = Column(TIMESTAMP, nullable=True, server_default=func.current_timestamp())
+    partnership_id = Column(Integer, ForeignKey("user_partnerships.partnership_id"), nullable=True, index=True)
 
     def __str__(self):
         return f"""
@@ -42,10 +42,18 @@ class UserModel(Base):
         last_name='{self.last_name}',
         username='{self.username}',
         email='{self.email}',
-        password='{self.hashed_password}'
+        password='{self.hashed_password},
+        partnership_id= {self.partnership_id}'
     )"""
 
+class UserPartnerships(Base):
+    def __init__(self, user_id_1: int, user_id_2: int):
+        self.user_id_1 = user_id_1
+        self.user_id_2 = user_id_2
 
-
-
+    __tablename__ = "user_partnerships"
+    partnership_id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
+    user_id_1 = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=True)
+    user_id_2 = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=True)
+    partnership_date = Column(TIMESTAMP, nullable=True, server_default=func.current_timestamp())
 
