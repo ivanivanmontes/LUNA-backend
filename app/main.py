@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from app.routes import user_routes
+from app.routes import user_routes, pin_routes
 from app import database
 
 app = FastAPI()
 app.include_router(user_routes.router)
+app.include_router(pin_routes.router)
 app.include_router(database.router)
 
 

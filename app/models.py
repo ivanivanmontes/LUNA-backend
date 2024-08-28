@@ -1,9 +1,10 @@
 import bcrypt
 
 from random import randint
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, func
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, func, DECIMAL
 from .database import Base
 from .schemas.user_schema import UserSchema
+from .schemas.pin_schema import PinSchema
 # sqlalchemy models
 class UserModel(Base):
     def __init__(self, user: UserSchema):
@@ -46,7 +47,7 @@ class UserModel(Base):
         partnership_id= {self.partnership_id}'
     )"""
 
-class UserPartnerships(Base):
+class UserPartnershipModel(Base):
     def __init__(self, user_id_1: int, user_id_2: int):
         self.user_id_1 = user_id_1
         self.user_id_2 = user_id_2
@@ -57,3 +58,32 @@ class UserPartnerships(Base):
     user_id_2 = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=True)
     partnership_date = Column(TIMESTAMP, nullable=True, server_default=func.current_timestamp())
 
+class PinModel(Base):
+    def __init__(self, pin: PinSchema):
+        self.pin_id = self._generate_pin_id()
+        self.user_id = pin.user_id
+        self.title = pin.title
+        self.latitude = pin.latitude
+        self.longitude = pin.longitude
+
+    __tablename__ = "pins"
+    pin_id = Column(Integer, primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), index=True, nullable=True)
+    title = Column(String(255), nullable=True, default=None)
+    latitude = Column(DECIMAL(9, 6), nullable=True, default=None)
+    longitude = Column(DECIMAL(9, 6), nullable=True, default=None)
+    creation_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=True)
+
+    def _generate_pin_id(self) -> int:
+        return randint(1,100000)
+    
+    def __str__(self):
+        return f"""
+    Pin(
+        pin_id={self.user_id}, 
+        user_id='{self.user_id}',
+        title='{self.title}',
+        latitude='{self.latitude}',
+        longitude='{self.longitude}',
+        creation_date='{self.creation_date}
+    )"""
