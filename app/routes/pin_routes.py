@@ -118,3 +118,4 @@ async def delete_pin(user_id: int, pin_id: int, db: Session = Depends(get_db)):
         logging.error(f"Error deleting pin: {pin_id}")
         raise HTTPException(status_code=400, detail=f"Error deleting pin: {pin_id}")
 
+#TODO: write an update route for pin
