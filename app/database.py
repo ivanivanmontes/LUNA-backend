@@ -16,7 +16,6 @@ db_host = os.getenv("DB_HOST")
 db_port = os.getenv("DB_PORT")
 
 # Database connection string
-#TODO: for some reason the root user doesn't have a password???
 DATABASE_URL = f"mysql+pymysql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
 Base = declarative_base()
 
@@ -44,7 +43,7 @@ async def check_db_connection():
             result = connection.execute(text("SELECT 1"))
             # Fetch the result to ensure execution
             _ = result.fetchone()
-        return {"status": "Connection successful!"}
+        return {"status": "DB Connection successful!"}
     except OperationalError as e:
         # Error with the Database URL
         return {"status": "Connection failed", "error": str(e)}

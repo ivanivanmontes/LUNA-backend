@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from app.routes import user_routes, pin_routes
 from app import database
+from app import s3
 
 app = FastAPI()
 app.include_router(user_routes.router)
 app.include_router(pin_routes.router)
 app.include_router(database.router)
+app.include_router(s3.router)
 
 
 @app.get("/")
