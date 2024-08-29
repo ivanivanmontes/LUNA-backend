@@ -64,7 +64,7 @@ async def get_all_pins(user_id: int, db: Session = Depends(get_db)):
     Args:
         user_id: user id to check against pins
     """
-    all_pins = db.query(PinModel).filter(PinModel.user_id == user_id).first()
+    all_pins = db.query(PinModel).filter(PinModel.user_id == user_id).all()
     return all_pins
 
 
