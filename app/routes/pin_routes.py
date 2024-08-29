@@ -90,4 +90,31 @@ async def create_pin(user_id: int, pin_info: PinSchema, db: Session = Depends(ge
         db.rollback()
         logging.error(f"Error creating pin: {e}")
         raise HTTPException(status_code=400, detail=f"Error creating pin: {e}")
-    
+
+@router.delete("/delete_pin/{user_id}/{pin_id}")
+async def delete_pin(user_id: int, pin_id: int, db: Session = Depends(get_db)):
+    """
+    we already added one for deleting off of user_pins table
+    only delete if the user is the primary owner of the pin
+    #TODO: we probably need to add triggers.
+    """
+    can_delete_pin = db.query(UserPinModel).filter(
+        and_(UserPinModel.pin_id == pin_id,
+             UserPinModel.user_id == user_id,
+             UserPinModel.ownership_type == "primary"
+            )
+        ).first()
+
+    if not can_delete_pin:
+        raise HTTPException(status_code=400, detail="user is not a primary owner of this pin, cannot delete. pin does not exist")
+
+    did_delete = db.query(PinModel).filter(PinModel.pin_id == pin_id).delete()
+    if did_delete:
+        db.commit()
+        logging.info(f"deleted pin {pin_id}")
+        return JSONResponse(status_code=200, content={"success": f"deleted pin: {pin_id}"})
+    else:
+        db.rollback()
+        logging.error(f"Error deleting pin: {pin_id}")
+        raise HTTPException(status_code=400, detail=f"Error deleting pin: {pin_id}")
+
