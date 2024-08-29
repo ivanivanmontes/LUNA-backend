@@ -5,5 +5,5 @@ class PinSchema(BaseModel):
     latitude: float
     longitude: float
     title: str
-    description: str
+    details: str
     user_id: int

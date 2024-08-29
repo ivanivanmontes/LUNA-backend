@@ -43,6 +43,9 @@ async def get_all_pins(user_id: int, db: Session = Depends(get_db)):
     Args:
         user_id: user id to check against pins
     """
+    all_pins = db.query(PinModel).filter(PinModel.user_id == user_id).first()
+    return all_pins
+
 
 @router.post("/create_pin/{user_id}", response_model=PinSchema)
 async def create_pin(user_id: int, pin_info: PinSchema, db: Session = Depends(get_db)) -> PinSchema:
@@ -55,10 +58,6 @@ async def create_pin(user_id: int, pin_info: PinSchema, db: Session = Depends(ge
     is_pin_duplicate = db.query(PinModel).filter(and_(PinModel.latitude == new_pin.latitude, PinModel.longitude == new_pin.longitude)).first()
     if is_pin_duplicate:
         raise HTTPException(status_code=400, detail="Pin location already exist")
-    is_pin_id_unique = db.query(PinModel).filter(PinModel.pin_id == new_pin.pin_id).first()
-    while is_pin_id_unique:
-        new_pin = PinModel(pin_info)
-        is_pin_id_unique = db.query(PinModel).filter(PinModel.pin_id == new_pin.pin_id)
     
     try:
         db.add(new_pin)
@@ -66,8 +65,8 @@ async def create_pin(user_id: int, pin_info: PinSchema, db: Session = Depends(ge
         db.refresh(new_pin)
         logging.info(f"Created new pin: {new_pin}")
         return pin_info
-    except:
+    except Exception as e:
         db.rollback()
-        logging.error(f"Error creating pin")
-        raise HTTPException(status_code=400, detail=f"Error creating user: {new_pin}")
+        logging.error(f"Error creating pin: {e}")
+        raise HTTPException(status_code=400, detail=f"Error creating pin: {e}")
     

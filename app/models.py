@@ -8,7 +8,6 @@ from .schemas.pin_schema import PinSchema
 # sqlalchemy models
 class UserModel(Base):
     def __init__(self, user: UserSchema):
-        self.user_id = self._generate_user_id()
         self.first_name = user.first_name
         self.last_name = user.last_name
         self.username = user.username
@@ -20,10 +19,6 @@ class UserModel(Base):
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
         return hashed_password.decode("utf-8")
-
-    def _generate_user_id(self) -> int:
-        # generate a user_id
-        return randint(1,100000)
 
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
@@ -60,27 +55,25 @@ class UserPartnershipModel(Base):
 
 class PinModel(Base):
     def __init__(self, pin: PinSchema):
-        self.pin_id = self._generate_pin_id()
         self.user_id = pin.user_id
         self.title = pin.title
         self.latitude = pin.latitude
         self.longitude = pin.longitude
+        self.details = pin.details
 
     __tablename__ = "pins"
-    pin_id = Column(Integer, primary_key=True, nullable=False)
+    pin_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.user_id', ondelete='CASCADE'), index=True, nullable=True)
     title = Column(String(255), nullable=True, default=None)
     latitude = Column(DECIMAL(9, 6), nullable=True, default=None)
     longitude = Column(DECIMAL(9, 6), nullable=True, default=None)
     creation_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=True)
-
-    def _generate_pin_id(self) -> int:
-        return randint(1,100000)
+    details = Column(String(255), nullable=True, default=None)  # Added field
     
     def __str__(self):
         return f"""
     Pin(
-        pin_id={self.user_id}, 
+        pin_id={self.pin_id}, 
         user_id='{self.user_id}',
         title='{self.title}',
         latitude='{self.latitude}',
