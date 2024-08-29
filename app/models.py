@@ -1,10 +1,15 @@
 import bcrypt
+import enum
 
-from random import randint
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, func, DECIMAL
+from sqlalchemy import TIMESTAMP, Column, Enum, ForeignKey, Integer, String, func, DECIMAL
 from .database import Base
 from .schemas.user_schema import UserSchema
 from .schemas.pin_schema import PinSchema
+
+class OwnershipType(enum.Enum):
+    primary = "primary"
+    secondary = "secondary"
+
 # sqlalchemy models
 class UserModel(Base):
     def __init__(self, user: UserSchema):
@@ -80,3 +85,12 @@ class PinModel(Base):
         longitude='{self.longitude}',
         creation_date='{self.creation_date}
     )"""
+
+class UserPinModel(Base):
+    __tablename__ = "user_pins"
+    user_pin_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    pin_id = Column(Integer, ForeignKey("pins.pin_id"), nullable=True)
+    ownership_type = Column(Enum(OwnershipType), nullable=False)
+    creation_date = Column(TIMESTAMP, nullable=True, server_default=func.current_timestamp())
+    removal_date = Column(TIMESTAMP, nullable=True)

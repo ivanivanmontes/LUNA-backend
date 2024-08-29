@@ -18,12 +18,14 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/get_pin/{pin_id}")
-async def get_pin(pin_id: int, db: Session = Depends(get_db)):
+@router.get("/get_pin/{user_id}/{pin_id}")
+async def get_pin(user_id: int, pin_id: int, db: Session = Depends(get_db)):
     """
-    retrieve a single pin's information given their id
+    retrieve a single pin's information given their id.
+    also passing in the user id for double checking to make sure we can return the correct user pin
 
     Args:
+        user_id: user id 
         pin_id: pin id
         db: database session
 
@@ -33,6 +35,25 @@ async def get_pin(pin_id: int, db: Session = Depends(get_db)):
     Raise:
         []
     """
+    # only return a pin if it belongs to the current user
+    can_get_pin = db.query(UserPinModel).filter(
+        and_(UserPinModel.pin_id == pin_id,
+             UserPinModel.user_id == user_id,
+             # third check can probably be removed later.
+             UserPinModel.ownership_type == "primary"
+            )
+        ).first()
+    
+    if not can_get_pin:
+        raise HTTPException(status_code=400, detail="pin details not accessible")
+    target_pin = db.query(PinModel).filter(PinModel.pin_id == pin_id).first()
+    # clunky, but we need to move fast!
+    response = {
+        "pin": target_pin,
+        "ownership_type": can_get_pin.ownership_type
+    }
+    return response
+
 
 
 @router.get("/get_all_pins/{user_id}")
