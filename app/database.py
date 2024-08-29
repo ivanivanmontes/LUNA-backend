@@ -13,10 +13,11 @@ db_username = os.getenv("DB_USERNAME")
 db_password = os.getenv("DB_PASSWORD")
 db_name = os.getenv("DB_NAME")
 db_host = os.getenv("DB_HOST")
+db_port = os.getenv("DB_PORT")
 
 # Database connection string
 #TODO: for some reason the root user doesn't have a password???
-DATABASE_URL = f"mysql+pymysql://{db_username}:{db_password}@{db_host}/{db_name}"
+DATABASE_URL = f"mysql+pymysql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
 Base = declarative_base()
 
 # Create a SQLAlchemy engine

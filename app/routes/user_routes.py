@@ -199,7 +199,7 @@ async def create_partnership(user_id_1: int, user_id_2: int, db: Session = Depen
         raise HTTPException(status_code=400, detail="one or more users are in a relationship")
     
     # create new entity in user_partnerships
-    new_partnership = UserPartnerships(user_id_1, user_id_2)
+    new_partnership = UserPartnershipModel(user_id_1, user_id_2)
     try:
         # we added a trigger to add partnership ids to the users attributes
         db.add(new_partnership)
@@ -229,7 +229,7 @@ async def delete_partnership(partnership_id: int, db: Session = Depends(get_db))
         []
     """
 
-    partnership_to_delete = db.query(UserPartnerships).filter(UserPartnerships.partnership_id == partnership_id).delete()
+    partnership_to_delete = db.query(UserPartnershipModel).filter(UserPartnershipModel.partnership_id == partnership_id).delete()
 
     if partnership_to_delete:
         # we created a trigger in our database to also delete the partnership ids from user table
