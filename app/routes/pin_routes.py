@@ -64,6 +64,9 @@ async def get_all_pins(user_id: int, db: Session = Depends(get_db)):
     Args:
         user_id: user id to check against pins
     """
+    does_user_exist = db.query(UserModel).filter(UserModel.user_id == user_id).first()
+    if not does_user_exist:
+        raise HTTPException(status_code=400, detail="user does not exist")
     all_pins = db.query(PinModel).filter(PinModel.user_id == user_id).all()
     return all_pins
 

@@ -1,7 +1,7 @@
 import bcrypt
 import enum
 
-from sqlalchemy import TIMESTAMP, Column, Enum, ForeignKey, Integer, String, func, DECIMAL
+from sqlalchemy import TIMESTAMP, Column, Enum, ForeignKey, Integer, String, Text, func, DECIMAL
 from .database import Base
 from .schemas.user_schema import UserSchema
 from .schemas.pin_schema import PinSchema
@@ -94,3 +94,32 @@ class UserPinModel(Base):
     ownership_type = Column(Enum(OwnershipType), nullable=False)
     creation_date = Column(TIMESTAMP, nullable=True, server_default=func.current_timestamp())
     removal_date = Column(TIMESTAMP, nullable=True)
+
+class MemoryInstanceModel(Base):
+
+    def __init__(self, pin_id : int):
+        self.pin_id = pin_id
+
+    __tablename__ = "memory_instances"
+    instance_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    pin_id = Column(Integer, ForeignKey("pins.pin_id"), nullable=True)
+    instance_date = Column(TIMESTAMP, nullable=True, server_default=func.current_timestamp())
+
+class MemoryModel(Base):
+    __tablename__ = "memories"
+    memory_id = Column(Integer, primary_key=True, autoincrement=True)
+    instance_id = Column(Integer, ForeignKey('memory_instances.instance_id'), nullable=True)
+    memory_type = Column(Enum("text", "photo", "video", "audio"), nullable=False)
+    memory_text = Column(Text, nullable=True)
+    file_url = Column(Text, nullable=True)
+    creation_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=True)
+    def __str__(self):
+        return f"""
+    Memory(
+        memory_id={self.memory_id}, 
+        instance_id='{self.instance_id}',
+        memory_type='{self.memory_type}',
+        memory_text='{self.memory_text}',
+        file_url='{self.file_url}',
+        creation_date='{self.creation_date}
+    )"""

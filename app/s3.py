@@ -2,7 +2,7 @@ import boto3
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError, BotoCoreError
 
 router = APIRouter()
@@ -42,3 +42,68 @@ async def test_s3_connection():
         print("An error occurred:", e)
     
     return False
+
+@router.get("/upload_audio")
+async def upload_audio_test():
+    try:
+        filename = '/Users/ivanmontes/Desktop/LUNA-backend/music.mp3'
+        bucketname = 'lovabledog'
+        key = 'audio_test.mp3'
+        s3.upload_file(filename, bucketname, key)
+        print("Upload Successful")
+        return f"https://{bucketname}.s3.amazonaws.com/{key}"
+    except Exception as e:
+        print(f"Upload failed: {e}")
+        return None
+    
+@router.get("/upload_text")
+async def upload_text_test():
+    try:
+        filename = '/Users/ivanmontes/Desktop/LUNA-backend/requirements.txt'
+        bucketname = 'lovabledog'
+        key = 'text_test.txt'
+        s3.upload_file(filename, bucketname, key)
+        print("Upload Successful")
+        return f"https://{bucketname}.s3.amazonaws.com/{key}"
+    except Exception as e:
+        print(f"Upload failed: {e}")
+        return None
+
+@router.get("/upload_photo")
+async def upload_photo_test():
+    try:
+        filename = '/Users/ivanmontes/Desktop/LUNA-backend/photo.JPG'
+        bucketname = 'lovabledog'
+        key = 'photo_test.JPG'
+        s3.upload_file(filename, bucketname, key)
+        print("Upload Successful")
+        return f"https://{bucketname}.s3.amazonaws.com/{key}"
+    except Exception as e:
+        print(f"Upload failed: {e}")
+        return None
+    
+@router.get("/upload_video")
+async def upload_video_test():
+    try:
+        filename = '/Users/ivanmontes/Desktop/LUNA-backend/Woody_Dance.mp4'
+        bucketname = 'lovabledog'
+        key = 'video_test.mp4'
+        s3.upload_file(filename, bucketname, key)
+        print("Upload Successful")
+        return f"https://{bucketname}.s3.amazonaws.com/{key}"
+    except Exception as e:
+        print(f"Upload failed: {e}")
+        return None
+    
+@router.get("/download_file")
+async def download_file():
+    try:
+        bucketname = 'lovabledog'
+        key = 'test.mp3'
+        download_path = '/Users/ivanmontes/Desktop/LUNA-backend/music.mp3'
+        s3.download_file(bucketname, key, download_path)
+        print("Download Successful")
+        return True
+    except Exception as e:
+        print(f"Download failed: {e}")
+        return False
