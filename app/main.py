@@ -25,12 +25,13 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # Replace with a strong key
 
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])  # Allow all hosts
-app.add_middleware(
-    BaseHTTPMiddleware,
-    dispatch=lambda scope, receive, send: (
-        scope.update({"scheme": "https"}) or send  # Force HTTPS
-    ),
-)
+
+async def https_middleware(scope, receive, send):
+    if scope["type"] == "http":
+        scope["scheme"] = "https"  # Force HTTPS
+    await app(scope, receive, send)
+
+app.add_middleware(BaseHTTPMiddleware, dispatch=https_middleware)
 
 
 @app.get("/")
