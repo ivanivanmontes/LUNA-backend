@@ -4,6 +4,8 @@ from app import database
 from app import s3
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
 app.include_router(user_routes.router)
@@ -20,11 +22,15 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-
-
 app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # Replace with a strong key
 
-
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])  # Allow all hosts
+app.add_middleware(
+    BaseHTTPMiddleware,
+    dispatch=lambda scope, receive, send: (
+        scope.update({"scheme": "https"}) or send  # Force HTTPS
+    ),
+)
 
 
 @app.get("/")
