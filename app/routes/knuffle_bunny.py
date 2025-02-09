@@ -41,28 +41,30 @@ class Event(BaseModel):
 # OAuth flow
 @router.get("/authorize")
 async def authorize(request: Request):
-    print(f"Request method: {request.method}")
     flow = Flow.from_client_config(
         {
             "web": {
                 "client_id": CLIENT_ID,
-                "project_id": "secret-descent-404416",
+                "client_secret": CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_secret": CLIENT_SECRET,
                 "redirect_uris": [REDIRECT_URI],
             }
         },
         scopes=SCOPES,
     )
     flow.redirect_uri = REDIRECT_URI
+
+    # Log the redirect URI and state
     authorization_url, state = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
     )
-    request.session["state"] = state  # Store the state in the session
-    print(f"Generated state: {state}")  # In /authorize
+    print(f"Authorization URL: {authorization_url}")
+    print(f"Redirect URI: {flow.redirect_uri}")
+    print(f"State: {state}")
+
+    request.session["state"] = state
     return RedirectResponse(url=authorization_url)
 
 
