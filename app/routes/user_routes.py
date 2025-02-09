@@ -34,6 +34,24 @@ def get_db():
 #    - overall this route could use the most refactoring
 
 
+@router.post("/login", response_model=LoginSchema)
+async def login(loginInfo: LoginSchema, db: Session = Depends(get_db)):
+    """
+    login route that requires checking username against password
+    """
+    target_user = db.query(UserModel).filter(UserModel.username == loginInfo.username).first()
+    hashed_password = ...
+    if target_user.hashed_password == hashed_password: # they can login!
+        
+        ...
+    else: # passwords dont match up
+        ...
+
+
+
+
+
+
 @router.get("/get_all_users")
 async def get_all_users(db: Session = Depends(get_db)):
     """
@@ -73,7 +91,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
 @router.post("/create_user", response_model=UserSchema)
 async def create_user(user: UserSchema, db: Session = Depends(get_db)) -> UserSchema:
     """
-    Create a user in the database
+    Create a user in the database. Register
 
     Args:
         user: JSON object that contains new user information

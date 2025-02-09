@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-from app.routes import user_routes, pin_routes, memory_routes
+from app.routes import user_routes, pin_routes, memory_routes, knuffle_bunny
 from app import database
 from app import s3
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI()
 app.include_router(user_routes.router)
@@ -9,6 +11,20 @@ app.include_router(pin_routes.router)
 app.include_router(database.router)
 app.include_router(s3.router)
 app.include_router(memory_routes.router)
+app.include_router(knuffle_bunny.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Replace with your frontend's URL
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
+
+app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # Replace with a strong key
+
+
 
 
 @app.get("/")
