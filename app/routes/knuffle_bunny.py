@@ -142,3 +142,7 @@ async def create_event(request: Request, event: Event):
         return {"message": "Event created successfully", "htmlLink": event_result["htmlLink"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create event: {str(e)}")
+
+@router.get("/invite")
+async def invite():
+    print("she clicked the gcal invite button")
