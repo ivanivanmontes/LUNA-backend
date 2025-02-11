@@ -146,3 +146,4 @@ async def create_event(request: Request, event: Event):
 @router.get("/invite")
 async def invite():
     print("she clicked the gcal invite button")
+    return JSONResponse({"message": "invite sent!"})
